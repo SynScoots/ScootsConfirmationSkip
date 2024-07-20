@@ -1,0 +1,7 @@
+## Interface: 30305
+## X-Compatible-With: 30305
+## Title: ScootsConfirmationSkip
+## Notes: Skips confirmation dialogues for looting BoP items, and for equipping BoE items
+## Author: Scoots
+
+ScootsConfirmationSkip.lua
