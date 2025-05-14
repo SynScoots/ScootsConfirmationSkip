@@ -15,7 +15,7 @@ function SCK.handleEvent(self, event)
 end
 
 function SCK.loop(self, event)
-	if(SCK.confirmActive == true) then
+	if(SCK.confirmActive == true and not UnitAffectingCombat('player')) then
 		if(_G['StaticPopup1']:IsVisible() and _G['StaticPopup1Button1']:IsVisible()) then
 			SCK.confirmActive = false
 			_G['StaticPopup1Button1']:Click()
