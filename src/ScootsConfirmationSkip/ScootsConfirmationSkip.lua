@@ -5,7 +5,9 @@ SCK.auctionsOpen = false
 SCK.frame = CreateFrame('Frame', nil, UIParent)
 
 function SCK.handleEvent(self, event)
-	if(event == 'AUCTION_HOUSE_SHOW') then
+    if(event =='DELETE_ITEM_CONFIRM') then
+		SCK.confirmActive = false
+	elseif(event == 'AUCTION_HOUSE_SHOW') then
 		SCK.auctionsOpen = true
 	elseif(event == 'AUCTION_HOUSE_CLOSED') then
 		SCK.auctionsOpen = false
@@ -31,4 +33,4 @@ SCK.frame:RegisterEvent('AUTOEQUIP_BIND_CONFIRM')
 SCK.frame:RegisterEvent('LOOT_BIND_CONFIRM')
 SCK.frame:RegisterEvent('AUCTION_HOUSE_SHOW')
 SCK.frame:RegisterEvent('AUCTION_HOUSE_CLOSED')
---SCK.frame:RegisterEvent('DELETE_ITEM_CONFIRM')
+SCK.frame:RegisterEvent('DELETE_ITEM_CONFIRM')
