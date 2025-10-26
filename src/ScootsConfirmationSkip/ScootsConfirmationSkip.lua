@@ -1,36 +1,77 @@
-SCK = {}
-SCK.confirmActive = false
-SCK.auctionsOpen = false
+ScootsConfirmationSkip = {
+    ['version'] = '2.0.0',
+    ['frame'] = CreateFrame('Frame', 'ScootsConfirmationSkip-EventsFrame', UIParent),
+    ['activeEvents'] = {},
+    ['eventMap'] = {
+        ['EQUIP_BIND_CONFIRM'] = {
+            ['popupWhich'] = 'EQUIP_BIND',
+            ['functionName'] = 'EquipPendingItem',
+        },
+        ['AUTOEQUIP_BIND_CONFIRM'] = {
+            ['popupWhich'] = 'AUTOEQUIP_BIND',
+            ['functionName'] = 'EquipPendingItem',
+        },
+        ['LOOT_BIND_CONFIRM'] = {
+            ['popupWhich'] = 'LOOT_BIND',
+            ['functionName'] = 'ConfirmLootSlot',
+        },
+        ['DELETE_ITEM_CONFIRM'] = {
+            ['popupWhich'] = 'DELETE_ITEM',
+            ['functionName'] = 'DeleteCursorItem',
+        },
+    },
+}
 
-SCK.frame = CreateFrame('Frame', nil, UIParent)
+ScootsConfirmationSkip.handleEvent = function(self, event)
+    local suppress = false
 
-function SCK.handleEvent(self, event)
-    if(event =='DELETE_ITEM_CONFIRM') then
-		SCK.confirmActive = false
-	elseif(event == 'AUCTION_HOUSE_SHOW') then
-		SCK.auctionsOpen = true
-	elseif(event == 'AUCTION_HOUSE_CLOSED') then
-		SCK.auctionsOpen = false
-	elseif(SCK.auctionsOpen == false) then
-		SCK.confirmActive = true
-	end
+    if(_G['AuctionFrame'] ~= nil and _G['AuctionFrame']:IsVisible()) then
+        suppress = true
+    elseif(_G['BHunterFrame'] ~= nil and _G['BHunterFrame']:IsVisible()) then
+        suppress = true
+    end
+    
+    if(suppress == true) then
+        ScootsConfirmationSkip.activeEvents = {}
+    elseif(ScootsConfirmationSkip.eventMap[event] ~= nil) then
+        table.insert(ScootsConfirmationSkip.activeEvents, event)
+    end
 end
 
-function SCK.loop(self, event)
-	if(SCK.confirmActive == true and not UnitAffectingCombat('player')) then
-		if(_G['StaticPopup1']:IsVisible() and _G['StaticPopup1Button1']:IsVisible()) then
-			SCK.confirmActive = false
-			_G['StaticPopup1Button1']:Click()
-		end
-	end
+ScootsConfirmationSkip.loop = function()
+    if(#ScootsConfirmationSkip.activeEvents > 0) then
+        local doLoop = true
+    
+        for eventIndex = 1, #ScootsConfirmationSkip.activeEvents do
+            if(doLoop == true) then
+                local event = ScootsConfirmationSkip.activeEvents[eventIndex]
+                
+                for popupIndex = 1, 10 do
+                    if(doLoop == true) then
+                        local popup = _G['StaticPopup' .. popupIndex]
+                        
+                        if(popup and popup:IsVisible() and popup.which == ScootsConfirmationSkip.eventMap[event].popupWhich) then
+                            _G[ScootsConfirmationSkip.eventMap[event].functionName](popup.data)
+                            StaticPopup_Hide(popup.which)
+                            doLoop = false
+                            
+                            for removeIndex = #ScootsConfirmationSkip.activeEvents, 1, -1 do
+                                if(ScootsConfirmationSkip.activeEvents[removeIndex] == event) then
+                                    table.remove(ScootsConfirmationSkip.activeEvents, removeIndex)
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
 end
 
-SCK.frame:SetScript('OnUpdate', SCK.loop)
+ScootsConfirmationSkip.frame:SetScript('OnEvent', ScootsConfirmationSkip.handleEvent)
+ScootsConfirmationSkip.frame:SetScript('OnUpdate', ScootsConfirmationSkip.loop)
 
-SCK.frame:SetScript('OnEvent', SCK.handleEvent)
-SCK.frame:RegisterEvent('EQUIP_BIND_CONFIRM')
-SCK.frame:RegisterEvent('AUTOEQUIP_BIND_CONFIRM')
-SCK.frame:RegisterEvent('LOOT_BIND_CONFIRM')
-SCK.frame:RegisterEvent('AUCTION_HOUSE_SHOW')
-SCK.frame:RegisterEvent('AUCTION_HOUSE_CLOSED')
-SCK.frame:RegisterEvent('DELETE_ITEM_CONFIRM')
+ScootsConfirmationSkip.frame:RegisterEvent('EQUIP_BIND_CONFIRM')
+ScootsConfirmationSkip.frame:RegisterEvent('AUTOEQUIP_BIND_CONFIRM')
+ScootsConfirmationSkip.frame:RegisterEvent('LOOT_BIND_CONFIRM')
+--ScootsConfirmationSkip.frame:RegisterEvent('DELETE_ITEM_CONFIRM')
